@@ -1,58 +1,98 @@
 # The Sieve Beneath the Stars — Siftan
 
-**Siftan** screens language-model training or fine-tuning data for overlap with known evaluation benchmarks. It builds portable, verifiable n-gram indexes and reports matches with the parameters and index hash needed to reproduce a scan.
+简体中文 · [English](README.en.md)
 
-[![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
-[![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+> 展示名 **The Sieve Beneath the Stars** 描绘一张在星空下筛取微尘的网；Siftan 是该项目的短名。
 
-## Quick start
+**面向语言模型评测语料的重合筛查工具。用你选择的索引发现可复核的匹配，并记录筛查参数与索引标识。**
+
+[![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+## 为什么需要它 / Why
+
+模型评测依赖测试集的可信度。如果训练数据与测试题重合，分数可能无法准确反映模型对新问题的泛化能力。Siftan 允许你针对指定的基准索引扫描语料中的 n-gram 重合，并导出带索引哈希和参数的结果供复查。
+
+（完整取证：[GAP_PROOF.md](GAP_PROOF.md)）
+
+## 安装 / Install
+
+> 当前尚未发布到 PyPI；下方给出从 GitHub 获取并本地安装的命令。
 
 ```bash
-# From the repository root, after cloning:
+git clone https://github.com/cloudydreamland/TheSieveBeneathTheStars.git
+cd TheSieveBeneathTheStars
 python -m pip install .
-# After the package is published to PyPI:
-python -m pip install siftan
-
-# Build an index from benchmark data you are allowed to use.
-siftan build-index benchmark.jsonl -o benchmark.tsi --name benchmark-v1
-
-# Screen a JSONL training set.
-siftan screen benchmark.tsi training.jsonl --text-field text --show-flagged
+# PyPI 首发后：python -m pip install siftan
 ```
 
-Python API:
+## 快速开始 / Quickstart
+
+```bash
+# 1. 把基准变成可携带的 n-gram 指纹索引（13-gram，与预训练去重惯例对齐）
+
+siftan build-index ceval_dev.jsonl -o ceval_dev.tsi --name C-Eval-dev
+
+# 2. 筛查你的微调集/训练集，生成可复核的筛查结果
+
+siftan screen ceval_dev.tsi my_sft_data.jsonl --text-field text --show-flagged
+# {"label": "CLEAN", "flag_ratio": 0.0, "index": {"sha256": "9f3a…"}, ...}
+
+# 退出码：0 CLEAN / 1 SUSPECT / 2 CONTAMINATED / 3 错误
+
+```
 
 ```python
 from siftan import build_index, screen
 
-index = build_index(benchmark_texts, name="benchmark-v1")
-certificate = screen("training-set", records, index)
-print(certificate.label, certificate.flag_ratio, certificate.index_sha256)
+index = build_index(benchmark_texts, name="C-Eval-dev")
+cert = screen("my-sft-data", [(rid, text), ...], index)
+print(cert.label, cert.flag_ratio, cert.index_sha256)
 ```
 
-## What is checked
+## 工作原理 / How it works
 
-- Exact character n-gram overlap after documented Unicode and whitespace normalization.
-- An advisory near-duplicate signal for some edits that preserve longer text spans.
-- Portable indexes with schema and content hashes that can be verified independently.
-- A machine-readable screening result with index identity and screening parameters.
+两层信号：
 
-## Read the result carefully
+1. **精确层（主判决）**：字符级 13-gram（NFKC 归一化 + 小写 + 空白压缩，
+   全角/大小写/空白变体泄漏照样命中）
+2. **近重复层（advisory，不改主判决）**：数据集记录的 8-gram 被基准包含的比率
+   ≥ 0.25 即命中——抓"复制后插注释/水印"式改写泄入（13-gram 已断、8-gram 仍存活）。
+   校准数据：合成注入式改写 ratio ∈ [0.264, 0.333]，干净语料 = 0.0，中间是空带。
+   诚实边界：对抗级结构性改写（最长保留段 <8 字符）超出本层能力，命中样例需人工复核
 
-`CLEAN` means this scan did not find a match against the supplied index using the selected rules. It does not prove a dataset is free of benchmark contamination. The near-duplicate signal is advisory and can require human review. Structural paraphrases, translations, and fragments shorter than the configured overlap signal may not be detected. Build indexes only from datasets whose license permits your intended use.
+- **索引 = 13-gram 集 + 8-gram 集 + 内容 sha256 头**（gzip 行式，schema v2）——
+  第三方可用 `siftan verify-index` 复算，筛查记录包含可校验的索引标识；
+  v1 旧索引可加载，近重复层如实报告不可用
+- **筛查结果**：数据集级 CLEAN/SUSPECT/CONTAMINATED（阈值公开），附索引哈希与全部参数
 
-## Documentation
+## 与现有方案的关系 / Landscape
 
-- [中文文档](README.zh-CN.md)
-- [Changelog](CHANGELOG.md)
-- [Roadmap](ROADMAP.md)
-- [Research and comparison notes](GAP_PROOF.md)
+| 方法类别 | 适用范围 |
+|---|---|
+| 评测框架 | 帮助运行 benchmark、计算分数；与训练语料重合检查是不同步骤 |
+| 自建 n-gram 脚本 | 可针对特定数据集做精确匹配；需自行管理索引、规范化和复现信息 |
+| Siftan | 针对用户提供的索引做可复现重合筛查；未命中不能证明语料完全无污染 |
 
-## Development and security
+## 路线图 / Roadmap
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Please report security issues privately; see [SECURITY.md](SECURITY.md).
+见 [ROADMAP.md](ROADMAP.md)。当前 0.1.0a1：n-gram 核心 + 索引校验 + 筛查结果 + CLI。
+接下来：近重复层（simhash/minhash）、常见基准的索引构建脚本、
+删除式去污染（redact 泄入片段）、lm-eval-harness 中间件。
+
+## 开发 / Development
+
+```bash
+pip install -e ".[dev]"
+./.venv/Scripts/python.exe -m pytest -q
+./.venv/Scripts/python.exe -m ruff check src tests
+```
+
+## 反馈与参与
+
+使用问题和功能建议可以在 [Discussions](https://github.com/cloudydreamland/TheSieveBeneathTheStars/discussions) 交流；可复现缺陷请提交 [Issue](https://github.com/cloudydreamland/TheSieveBeneathTheStars/issues)。请只附合成或脱敏后的最小样例，不要上传真实个人信息、API key 或业务原文。安全问题请按 [SECURITY.md](SECURITY.md) 私下报告。
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+MIT
