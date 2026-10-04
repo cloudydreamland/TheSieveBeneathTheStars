@@ -10,6 +10,8 @@
 [![Python](https://img.shields.io/pypi/pyversions/siftan)](https://pypi.org/project/siftan/)
 [![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+![siftan 演示：构建索引 → 筛查 → 污染证明书（真实运行输出）](docs/assets/demo.svg)
 ## 为什么需要它 / Why
 
 模型评测依赖测试集的可信度。如果训练数据与测试题重合，分数可能无法准确反映模型对新问题的泛化能力。Siftan 允许你针对指定的基准索引扫描语料中的 n-gram 重合，并导出带索引哈希和参数的结果供复查。

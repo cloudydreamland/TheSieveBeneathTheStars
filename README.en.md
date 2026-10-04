@@ -8,6 +8,8 @@
 [![Python](https://img.shields.io/pypi/pyversions/siftan)](https://pypi.org/project/siftan/)
 [![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+![siftan demo: build index → screen → contamination certificate (real output)](docs/assets/demo.svg)
 ## Quick start
 
 ```bash
