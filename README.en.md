@@ -10,19 +10,16 @@
 
 ## Quick start
 
-> This package is not on PyPI yet. Install the current GitHub version with:
+```bash
+python -m pip install siftan
+```
 
+Or install from source (latest development version):
 
 ```bash
 git clone https://github.com/cloudydreamland/TheSieveBeneathTheStars.git
 cd TheSieveBeneathTheStars
 python -m pip install .
-
-# Build an index from benchmark data you are allowed to use.
-siftan build-index benchmark.jsonl -o benchmark.tsi --name benchmark-v1
-
-# Screen a JSONL training set.
-siftan screen benchmark.tsi training.jsonl --text-field text --show-flagged
 ```
 
 Python API:
