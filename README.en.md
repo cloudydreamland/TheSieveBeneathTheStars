@@ -4,10 +4,10 @@
 
 **Siftan** screens language-model training or fine-tuning data for overlap with known evaluation benchmarks. It builds portable, verifiable n-gram indexes and reports matches with the parameters and index hash needed to reproduce a scan.
 
+[![PyPI](https://img.shields.io/pypi/v/siftan)](https://pypi.org/project/siftan/)
+[![Python](https://img.shields.io/pypi/pyversions/siftan)](https://pypi.org/project/siftan/)
 [![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
-[![MIT license](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ## Quick start
 
 ```bash

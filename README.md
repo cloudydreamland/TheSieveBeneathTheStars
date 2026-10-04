@@ -6,10 +6,10 @@
 
 **面向语言模型评测语料的重合筛查工具。用你选择的索引发现可复核的匹配，并记录筛查参数与索引标识。**
 
-[![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
+[![PyPI](https://img.shields.io/pypi/v/siftan)](https://pypi.org/project/siftan/)
+[![Python](https://img.shields.io/pypi/pyversions/siftan)](https://pypi.org/project/siftan/)
+[![CI](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml/badge.svg)](https://github.com/cloudydreamland/TheSieveBeneathTheStars/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-
 ## 为什么需要它 / Why
 
 模型评测依赖测试集的可信度。如果训练数据与测试题重合，分数可能无法准确反映模型对新问题的泛化能力。Siftan 允许你针对指定的基准索引扫描语料中的 n-gram 重合，并导出带索引哈希和参数的结果供复查。
